@@ -1,0 +1,74 @@
+##### INSPIRED BY DATA CAMP PROJECT #####
+
+# Importing pandas and matplotlib
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Reading the Netflix dataset
+# Dataset source: https://www.kaggle.com/shivamb/netflix-shows
+netflix_df = pd.read_csv('netflix_data.csv')
+
+# Display the first 5 rows of the dataframe
+print(netflix_df[0:5])
+
+# Filtering the dataset to include only movies
+netflix_subset = netflix_df.loc[netflix_df["type"] == "Movie"]
+
+# Selecting relevant columns for the analysis
+netflix_movies = netflix_subset[['title', 'country', 'genre', 'release_year', 'duration']]
+
+# Filtering movies with a duration of less than 60 minutes
+short_movies = netflix_movies[netflix_movies['duration'] < 60]
+
+# Display the first 20 short movies
+print(short_movies[0:20])
+
+# Initialize an empty list to store colors
+colors = []
+
+# Assign colors based on the genre of the movie
+for label, row in netflix_movies.iterrows():
+    if row["genre"] == "Children":
+        colors.append("red")
+    elif row["genre"] == "Documentaries":
+        colors.append("blue")
+    elif row["genre"] == "Stand-Up":
+        colors.append("green")
+    else:
+        colors.append("black")
+
+# Display the first 10 colors assigned
+print(colors[:10])
+
+# Create a figure and axis for the scatter plot
+fig = plt.figure(figsize=(12, 8))
+
+# Create a scatter plot of movie duration by year of release
+plt.scatter(netflix_movies.release_year, netflix_movies.duration, c=colors)
+plt.xlabel("Release year")
+plt.ylabel("Duration (min)")
+plt.title("Movie Duration by Year of Release")
+plt.show()
+
+
+# Average movie duration by year
+avg_duration_by_year = netflix_movies.groupby('release_year')['duration'].mean()
+plt.figure(figsize=(12, 8))
+avg_duration_by_year.plot(kind='line', color='blue')
+plt.title('Average Movie Duration by Year')
+plt.xlabel('Year')
+plt.ylabel('Average Duration (min)')
+plt.grid(True)
+plt.show()
+
+# Top 10 countries with the most movies
+top_countries = netflix_movies['country'].value_counts().head(10)
+plt.figure(figsize=(12, 8))
+top_countries.plot(kind='bar', color='orange')
+plt.title('Top 10 Countries with the Most Movies')
+plt.xlabel('Country')
+plt.ylabel('Number of Movies')
+plt.grid(True)
+plt.show()
+
+
