@@ -1,0 +1,98 @@
+# Installing necessary packages
+install.packages("ggplot2")  # Install ggplot2 package for creating plots
+install.packages("dplyr")  # Install dplyr package for data manipulation
+install.packages("readxl")  # Install readxl package for reading Excel files
+
+# Loading the installed packages
+library(ggplot2)  
+library(dplyr)  
+library(readxl)  
+
+# Loading data from an Excel file
+data <- read_excel("C:/RR.xlsx")  # Load data from an Excel file into the 'data' object
+
+# Display the data to check its structure
+data  # Display the data to inspect its contents
+
+# Checking if the 'data' object is a data frame
+is.data.frame(data)  # The is.data.frame function checks whether 'data' is a data frame
+
+# Adding a new column 'zarobki_srednie' with the middle values of income ranges
+data <- data %>%         
+  mutate(  # The mutate function adds a new column to the dataset
+    zarobki_srednie = case_when(  # The case_when function assigns values based on income ranges
+      zarobki == "0 - 2500 zł" ~ 1250,  # If 'zarobki' equals "0 - 2500 zł", assign 1250
+      zarobki == "2501- 4300 zł" ~ 3400,  
+      zarobki == "4301 - 5500 zł" ~ 4900,  
+      zarobki == "5501 - 7000 zł" ~ 6250,
+      zarobki == "7001 - 9000 zł" ~ 8000,
+      zarobki == "9001 - 12000 zł" ~ 10500,
+      zarobki == "12001 zł i więcej" ~ 13000,
+      TRUE ~ NA_real_  # Assign NA if none of the conditions match
+    )
+  )
+data
+colSums(is.na(data)) # Counts the number of missing values in each column
+sapply(data, class)  # Returns the class of each column in the data frame
+# Adding a new column ‘wydatki_srednie’ with the average values of spending ranges
+data <- data %>%           
+ mutate(  # Using mutate to create a new column 'wydatki_srednie'
+    wydatki_srednie = case_when(  # Using case_when to assign average values based on spending ranges
+      `srednie wydatki` == "0 - 100 (zł)" ~ 50,  
+      `srednie wydatki` == "101 - 200 (zł)" ~ 150, 
+      `srednie wydatki` == "201 - 350 (zł)" ~ 275,
+      `srednie wydatki` == "351 - 500 (zł)" ~ 425,
+      `srednie wydatki` == "501(zł) i więcej" ~ 600,
+      TRUE ~ NA_real_  # Assign NA if no matching value is found
+    )
+  )
+
+# Plot 1 - Bar chart of age distribution
+ggplot(data, aes(x = Wiek)) +  # Create a bar chart using ggplot2, setting 'Wiek' as the X-axis variable
+  geom_bar(fill = "yellow", color = "black") +  # Add a bar layer with yellow fill and black borders
+  geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, color = "black") +  # Add labels above bars
+  labs(title = "Age distribution of respondents", y = "Number of respondents", x = "Age (ranges)")
+
+# Plot 2 - Histogram of average income distribution
+ggplot(data, aes(x = zarobki_srednie)) + 
+  geom_histogram(binwidth = 1700, fill = "blue", color = "black") +  # Define histogram bins and colors
+  labs(title = "Distribution of average income", x = "Average income (PLN)", y = "Number of respondents")
+
+# Plot 3 - Bar chart of gender distribution
+ggplot(data, aes(x = Płeć)) +  # Create a bar chart based on the 'Płeć' variable
+  geom_bar(fill = "red") +  # Set bar fill color to red
+  geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, color = "black")  # Add count labels above bars
+
+# Calculate and print the correlation between 'waznosc ceny' and 'waznosc jakosci'
+cor_waznosc_ceny_jakosci <- cor(data$`waznosc ceny`, data$`waznosc jakosci`, use = "complete.obs")
+cor_waznosc_ceny_jakosci  # Print the correlation value
+# Plot 4 - Scatter plot of the relationship between price importance and product quality
+ggplot(data, aes(x = `waznosc ceny`, y = `waznosc jakosci`, color= Płeć)) +  
+  geom_jitter(size = 3, width = 0.25, height = 0.25) +  # Use jitter to avoid overlapping points
+  labs(title = "Comparison of price and quality importance between genders", x = "Price importance", y = "Quality importance") +
+  scale_x_continuous(limits = c(0, NA)) +  
+  scale_y_continuous(limits = c(0, NA))  
+
+# Plot 5 - Scatter plot of the relationship between safety perception and product origin
+ggplot(data, aes(x = `poczucie bezpieczenstwa`, y = `waznosc kraju poch`, color= Płeć)) +  
+  geom_jitter(size = 3, width = 0.25, height = 0.25) +  
+  labs(title = "Scatter plot with distribution", x = "Product safety perception", y = "Product origin importance") +
+  scale_x_continuous(limits = c(0, NA)) +  
+  scale_y_continuous(limits = c(0, NA))  
+
+# Plot 6 - Box plot of safety perception by age
+ggplot(data, aes(x = Wiek, y = `poczucie bezpieczenstwa`)) +  
+  geom_boxplot(fill = "lightblue", color = "black") +  # Box plot with light blue fill and black borders
+  labs(title = "Approach to product safety by age", x = "Age (ranges)", y = "Product safety importance") +
+  scale_y_continuous(limits = c(0, NA))  
+
+# Plot 7 - Box plot of ecological awareness by age
+ggplot(data, aes(x = Wiek, y = `wazność ekol`)) +  
+  geom_boxplot(fill = "green", color = "black") +  # Box plot with green fill and black borders
+  labs(title = "Ecological importance by age", x = "Age groups", y = "Ecological importance") +
+  scale_y_continuous(limits = c(0, NA))  
+
+# Plot 8 - Scatter plot of the relationship between average income and average spending
+ggplot(data, aes(x = zarobki_srednie, y = wydatki_srednie, color = Płeć)) +  
+  geom_jitter(size = 2, width = 700, height = 70) +  # Use jitter to spread points and avoid overlap
+  labs(title = "Relationship between average income and grocery spending", x = "Average income (PLN)", y = "Spending per person (PLN)")  
